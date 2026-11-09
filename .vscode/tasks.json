@@ -1,0 +1,119 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "dgovph-api: dotnet build",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/services/api/DgovPh.Api.csproj",
+                "--configuration",
+                "Debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/services/api"
+            },
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "runOptions": {
+                "instanceLimit": 1,
+                "instancePolicy": "silent"
+            }
+        },
+        {
+            "label": "dgovph-api: ef database update",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "ef",
+                "database",
+                "update",
+                "--project",
+                "DgovPh.Api.csproj",
+                "--startup-project",
+                "DgovPh.Api.csproj",
+                "--no-build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/services/api"
+            },
+            "problemMatcher": [],
+            "runOptions": {
+                "instanceLimit": 1,
+                "instancePolicy": "silent"
+            }
+        },
+        {
+            "label": "dgovph-api: api start",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--no-build",
+                "--launch-profile",
+                "DgovPh.Api"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/services/api"
+            },
+            "dependsOn": [
+                "dgovph-api: dotnet build",
+                "dgovph-api: ef database update"
+            ],
+            "dependsOrder": "sequence",
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "aspnetcore",
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*$",
+                    "endsPattern": "Now listening on: http://localhost:5000"
+                }
+            },
+            "runOptions": {
+                "instanceLimit": 1,
+                "instancePolicy": "silent"
+            }
+        },
+        {
+            "label": "d-gov-ph-web: dev",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/services/web"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "vite",
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "VITE",
+                    "endsPattern": "Local:"
+                }
+            },
+            "runOptions": {
+                "instanceLimit": 1,
+                "instancePolicy": "silent"
+            }
+        },
+        {
+            "label": "debug-all-services: start services",
+            "dependsOn": [
+                "dgovph-api: api start",
+                "d-gov-ph-web: dev"
+            ],
+            "dependsOrder": "sequence",
+            "runOptions": {
+                "instanceLimit": 1,
+                "instancePolicy": "silent"
+            }
+        }
+    ]
+}

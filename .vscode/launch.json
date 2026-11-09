@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DgovPh.Api (debug)",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "DgovPh.Api.exe",
+            "preLaunchTask": "dgovph-api: api start"
+        },
+        {
+            "name": "D-Gov PH Web (debug)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/services/web",
+            "preLaunchTask": "d-gov-ph-web: dev"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug All Services",
+            "configurations": [
+                "DgovPh.Api (debug)",
+                "D-Gov PH Web (debug)"
+            ],
+            "preLaunchTask": "debug-all-services: start services",
+            "stopAll": true
+        }
+    ]
+}
