@@ -175,4 +175,32 @@ export const liveClient: ApiClient = {
       items,
     };
   },
+
+  getDataGovPhResourceFileDownloadUrl(fileId) {
+    return `${apiBaseUrl.replace(/\/$/, '')}/catalog/files/${encodeURIComponent(fileId)}/download`;
+  },
+
+  async downloadDataGovPhResourceFile(fileId, fileName) {
+    const response = await fetch(liveClient.getDataGovPhResourceFileDownloadUrl(fileId));
+    if (!response.ok) {
+      let message = 'This file could not be downloaded.';
+      try {
+        const error = await response.json() as ApiErrorResponse;
+        message = error.error?.message ?? message;
+      } catch {
+        message = response.statusText || message;
+      }
+      throw new ApiRequestError(response.status, message);
+    }
+
+    const objectUrl = URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  },
 };

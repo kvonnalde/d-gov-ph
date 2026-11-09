@@ -34,6 +34,27 @@ public static class DataGovPhCatalogEndpoints
             .Produces<ApiErrorResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiErrorResponse>(StatusCodes.Status503ServiceUnavailable);
 
+        endpoints.MapGet("/api/catalog/files/{fileId}/download", async Task<IResult> (
+            string fileId,
+            DataGovPhCatalogClient catalog,
+            CancellationToken cancellationToken) =>
+        {
+            if (string.IsNullOrWhiteSpace(fileId) || fileId.Length > 128)
+            {
+                return TypedResults.BadRequest(new ApiErrorResponse(new ApiError(
+                    ApiErrorCode.VALIDATION_ERROR,
+                    "A valid catalog file ID is required.")));
+            }
+
+            var file = await catalog.DownloadResourceFileAsync(fileId, cancellationToken);
+            return Results.File(file.Content, file.ContentType, file.FileName);
+        })
+            .WithName("DownloadDataGovPhCatalogFile")
+            .Produces(StatusCodes.Status200OK)
+            .Produces<ApiErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiErrorResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiErrorResponse>(StatusCodes.Status503ServiceUnavailable);
+
         return endpoints;
     }
 }

@@ -101,7 +101,21 @@ a { color: inherit; }
 .catalog-filter-select:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
 .catalog-results table { min-width: 900px; }
 .catalog-dataset-cell { display: flex; flex-direction: column; gap: 3px; min-width: 210px; }
+.catalog-dataset-open { max-width: 100%; padding: 0; border: 0; color: var(--brand-primary); background: transparent; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.catalog-dataset-open:hover { text-decoration: underline; }
 .catalog-description { display: -webkit-box; overflow: hidden; margin: 3px 0 0; color: var(--page-muted); font-size: 11px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.catalog-dialog-content { display: flex; flex-direction: column; gap: 12px; max-height: min(65vh, 620px); overflow-y: auto; }
+.catalog-resource { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--page-border); }
+.catalog-resource-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.catalog-resource-heading h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.catalog-resource-heading > span { flex: 0 0 auto; color: var(--page-muted); font-size: 11px; }
+.catalog-file-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.catalog-file-list li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 10px; border: 1px solid var(--page-border); border-radius: 4px; }
+.catalog-file-info { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.catalog-file-name { overflow-wrap: anywhere; font-size: 12px; }
+.catalog-source-link { width: fit-content; color: var(--brand-primary); font-size: 12px; font-weight: 600; text-decoration: none; }
+.catalog-source-link:hover { text-decoration: underline; }
+.catalog-download-button { flex: 0 0 auto; }
 .search-panel [role="combobox"] { width: 100%; }
 .search-actions { display: flex; justify-content: flex-end; gap: 8px; padding-bottom: 1px; }
 .search-actions button { min-height: 36px; }

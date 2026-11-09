@@ -20,4 +20,11 @@ public sealed record DataGovPhDatasetResponse(
     IReadOnlyList<DataGovPhResourceResponse> Resources);
 
 /// <summary>Public metadata for one downloadable catalog resource.</summary>
-public sealed record DataGovPhResourceResponse(string Id, string Name, string? Format);
+public sealed record DataGovPhResourceResponse(
+    string Id,
+    string Name,
+    string? Format,
+    IReadOnlyList<DataGovPhResourceFileResponse> Files);
+
+/// <summary>Public file metadata for a catalog resource.</summary>
+public sealed record DataGovPhResourceFileResponse(string? Id, string Name, long? Size);

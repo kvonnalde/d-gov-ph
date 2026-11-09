@@ -18,7 +18,8 @@ import { ArrowClockwiseRegular, ArrowRightRegular, DocumentRegular, SearchRegula
 import { api } from '../api';
 import { useApiResource, type ResourceState } from '../api/useApiResource';
 import { DataStateView } from '../components/DataStateView';
-import type { DataGovPhCatalogSearchResponse, SourcesResponse } from '../api/types';
+import { CatalogDatasetDialog } from '../components/CatalogDatasetDialog';
+import type { DataGovPhCatalogDataset, DataGovPhCatalogSearchResponse, SourcesResponse } from '../api/types';
 import { getCatalogPeriod } from '../utils/catalogPeriod';
 
 const isSourcesEmpty = (value: SourcesResponse) => value.items.length === 0;
@@ -37,6 +38,7 @@ export function SourcesPage() {
   const [catalogQuery, setCatalogQuery] = useState('');
   const [catalogState, setCatalogState] = useState<CatalogSearchState>({ status: 'idle' });
   const [catalogPage, setCatalogPage] = useState(1);
+  const [selectedDataset, setSelectedDataset] = useState<DataGovPhCatalogDataset | null>(null);
 
   async function searchCatalog() {
     const query = catalogQuery.trim();
@@ -148,7 +150,14 @@ export function SourcesPage() {
                             <TableRow key={dataset.id}>
                               <TableCell>
                                 <div className="catalog-dataset-cell">
-                                  <span className="source-name">{dataset.name}</span>
+                                  <button
+                                    type="button"
+                                    className="catalog-dataset-open"
+                                    aria-label={`View resources for ${dataset.name}`}
+                                    onClick={() => setSelectedDataset(dataset)}
+                                  >
+                                    {dataset.name}
+                                  </button>
                                   <Body2>{dataset.publisher || 'Publisher not listed'}</Body2>
                                   {description && <p className="catalog-description">{description}</p>}
                                 </div>
@@ -224,6 +233,7 @@ export function SourcesPage() {
           )}
         </DataStateView>
       </section>
+      <CatalogDatasetDialog dataset={selectedDataset} onClose={() => setSelectedDataset(null)} />
     </div>
   );
 }

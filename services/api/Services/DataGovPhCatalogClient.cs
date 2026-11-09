@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,6 +7,10 @@ using System.Text.Json.Serialization;
 using DgovPh.Api.Contracts;
 
 namespace DgovPh.Api.Services;
+
+public sealed record DataGovPhResourceFileDownload(byte[] Content, string ContentType, string FileName);
+
+public sealed class DataGovPhResourceFileUnavailableException(string message) : Exception(message);
 
 public sealed class DataGovPhCatalogUnavailableException(string message, Exception? innerException = null)
     : Exception(message, innerException);
@@ -65,7 +70,11 @@ public sealed class DataGovPhCatalogClient(HttpClient httpClient, IConfiguration
                 (dataset.Resources ?? []).Select(resource => new DataGovPhResourceResponse(
                     resource.Id,
                     resource.Name,
-                    resource.Format)).ToArray())).ToArray();
+                    resource.Format,
+                    (resource.Files ?? []).Select(file => new DataGovPhResourceFileResponse(
+                        file.Id,
+                        file.Name,
+                        file.Size)).ToArray())).ToArray())).ToArray();
 
             return new DataGovPhDatasetSearchResponse(result.Total, result.Page, pageSize, items);
         }
@@ -80,6 +89,53 @@ public sealed class DataGovPhCatalogClient(HttpClient httpClient, IConfiguration
         catch (JsonException exception)
         {
             throw new DataGovPhCatalogUnavailableException("The Open Data Philippines API returned invalid data.", exception);
+        }
+    }
+
+    public async Task<DataGovPhResourceFileDownload> DownloadResourceFileAsync(
+        string fileId,
+        CancellationToken cancellationToken)
+    {
+        var apiKey = configuration["DataGovPh:ApiKey"];
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/file/download?_id={Uri.EscapeDataString(fileId)}");
+        request.Headers.Add("X-API-KEY", string.IsNullOrWhiteSpace(apiKey) ? CreatePublicClientHeader() : apiKey);
+
+        try
+        {
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            {
+                throw new DataGovPhResourceFileUnavailableException(
+                    "This file is listed in the catalog but is no longer available from the publishing agency.");
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new DataGovPhCatalogUnavailableException(
+                    $"The Open Data Philippines file service returned HTTP {(int)response.StatusCode}.");
+            }
+
+            var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            var upstreamName = response.Content.Headers.ContentDisposition?.FileNameStar
+                ?? response.Content.Headers.ContentDisposition?.FileName;
+            var fileName = string.IsNullOrWhiteSpace(upstreamName)
+                ? "government-dataset-download"
+                : Path.GetFileName(upstreamName.Trim('"'));
+
+            return new DataGovPhResourceFileDownload(
+                content,
+                response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream",
+                fileName);
+        }
+        catch (HttpRequestException exception)
+        {
+            throw new DataGovPhCatalogUnavailableException("The Open Data Philippines file service could not be reached.", exception);
+        }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new DataGovPhCatalogUnavailableException("The Open Data Philippines file request timed out.", exception);
         }
     }
 
@@ -139,5 +195,11 @@ public sealed class DataGovPhCatalogClient(HttpClient httpClient, IConfiguration
     private sealed record UpstreamResource(
         [property: JsonPropertyName("_id")] string Id,
         [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("resourceFormat")] string? Format);
+        [property: JsonPropertyName("resourceFormat")] string? Format,
+        [property: JsonPropertyName("resourceFile")] IReadOnlyList<UpstreamResourceFile>? Files);
+
+    private sealed record UpstreamResourceFile(
+        [property: JsonPropertyName("_id")] string? Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("size")] long? Size);
 }

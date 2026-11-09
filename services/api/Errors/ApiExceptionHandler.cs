@@ -20,6 +20,8 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
             DataGovPhCatalogUnavailableException =>
                 (StatusCodes.Status503ServiceUnavailable, ApiErrorCode.SERVICE_UNAVAILABLE,
                     "The Open Data Philippines catalog is not configured or is temporarily unavailable."),
+            DataGovPhResourceFileUnavailableException fileException =>
+                (StatusCodes.Status404NotFound, ApiErrorCode.NOT_FOUND, fileException.Message),
             InvalidOperationException { InnerException: DbException } =>
                 (StatusCodes.Status503ServiceUnavailable, ApiErrorCode.SERVICE_UNAVAILABLE,
                     "The data service is temporarily unavailable."),

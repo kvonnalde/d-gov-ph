@@ -72,6 +72,13 @@ export interface DataGovPhCatalogResource {
   id: string;
   name: string;
   format: string | null;
+  files: DataGovPhCatalogResourceFile[];
+}
+
+export interface DataGovPhCatalogResourceFile {
+  id: string | null;
+  name: string;
+  size: number | null;
 }
 
 export interface DataGovPhCatalogDataset {
@@ -102,4 +109,6 @@ export interface ApiClient {
   listSources(): Promise<SourcesResponse>;
   searchDataGovPhCatalog(query: string, page?: number, pageSize?: number): Promise<DataGovPhCatalogSearchResponse>;
   searchAllDataGovPhCatalog(query: string, pageSize?: number): Promise<DataGovPhCatalogSearchResponse>;
+  getDataGovPhResourceFileDownloadUrl(fileId: string): string;
+  downloadDataGovPhResourceFile(fileId: string, fileName: string): Promise<void>;
 }
