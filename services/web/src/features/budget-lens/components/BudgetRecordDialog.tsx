@@ -10,7 +10,7 @@ import {
   Divider,
 } from '@fluentui/react-components';
 import { DismissRegular } from '@fluentui/react-icons';
-import type { BudgetRecordDetail } from '../api/types';
+import type { BudgetRecordDetail } from '../../../api/types';
 
 interface BudgetRecordDialogProps {
   record: BudgetRecordDetail | null;

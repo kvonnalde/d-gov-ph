@@ -11,12 +11,14 @@ import {
   TableHeaderCell,
   TableRow,
 } from '@fluentui/react-components';
-import { ArrowClockwiseRegular, ArrowRightRegular, SearchRegular } from '@fluentui/react-icons';
-import { api } from '../api';
-import { useApiResource } from '../api/useApiResource';
-import { DataStateView } from './DataStateView';
-import type { DataGovPhCatalogSearchResponse } from '../api/types';
-import { getCatalogPeriod, getCatalogYears } from '../utils/catalogPeriod';
+import { ArrowClockwiseRegular, SearchRegular } from '@fluentui/react-icons';
+import { api } from '../../../api';
+import { useApiResource } from '../../../api/useApiResource';
+import { DataStateView } from '../../../components/DataStateView';
+import type { DataGovPhCatalogSearchResponse } from '../../../api/types';
+import { getCatalogPeriod, getCatalogYears } from '../../../utils/catalogPeriod';
+import { TablePagination } from './TablePagination';
+import { TableText } from './TableText';
 
 const isCatalogEmpty = (value: DataGovPhCatalogSearchResponse) => value.items.length === 0;
 const tablePageSize = 25;
@@ -74,7 +76,7 @@ export function GovernmentDatasetsPreview({ title, query = '', pageSize = 50, sh
       </div>
       {showSearch && (
         <form className={`search-panel catalog-search-panel${showFilters ? ' catalog-search-panel--filters' : ''}`} role="search" onSubmit={handleSearch}>
-          <Field label="Search public datasets" hint="Search by dataset, publisher, or topic">
+          <Field label="Search public datasets">
             <Input
               type="search"
               value={draftQuery}
@@ -132,7 +134,6 @@ export function GovernmentDatasetsPreview({ title, query = '', pageSize = 50, sh
             const filteredDatasets = results.items.filter((dataset) =>
               (!datasetYear || getCatalogYears([dataset.name]).includes(datasetYear))
               && (!publisher || dataset.publisher === publisher));
-            const pageCount = Math.max(1, Math.ceil(filteredDatasets.length / tablePageSize));
             const pageStart = filteredDatasets.length === 0 ? 0 : (tablePage - 1) * tablePageSize + 1;
             const pageEnd = Math.min(tablePage * tablePageSize, filteredDatasets.length);
             const visibleDatasets = filteredDatasets.slice(pageStart - 1, pageEnd);
@@ -153,11 +154,11 @@ export function GovernmentDatasetsPreview({ title, query = '', pageSize = 50, sh
                     <TableBody>
                       {filteredDatasets.length ? visibleDatasets.map((dataset) => (
                         <TableRow key={dataset.id}>
-                          <TableCell><span className="source-name">{dataset.name}</span></TableCell>
-                          <TableCell>{getCatalogPeriod(dataset.name)}</TableCell>
-                          <TableCell>{dataset.publisher || 'Publisher not listed'}</TableCell>
-                          <TableCell>{dataset.topics.length ? dataset.topics.join(', ') : 'Not tagged'}</TableCell>
-                          <TableCell>{dataset.modifiedDate || 'Not listed'}</TableCell>
+                          <TableCell><TableText value={dataset.name} className="source-name" /></TableCell>
+                          <TableCell><TableText value={getCatalogPeriod(dataset.name)} /></TableCell>
+                          <TableCell><TableText value={dataset.publisher || 'Publisher not listed'} /></TableCell>
+                          <TableCell><TableText value={dataset.topics.length ? dataset.topics.join(', ') : 'Not tagged'} /></TableCell>
+                          <TableCell><TableText value={dataset.modifiedDate || 'Not listed'} /></TableCell>
                         </TableRow>
                       )) : (
                         <TableRow>
@@ -171,13 +172,7 @@ export function GovernmentDatasetsPreview({ title, query = '', pageSize = 50, sh
                     </TableBody>
                   </Table>
                 </div>
-                {pageCount > 1 && (
-                  <div className="table-pagination">
-                      <Button size="small" appearance="subtle" icon={<ArrowRightRegular className="pagination-previous-icon" />} onClick={() => setTablePage((page) => page - 1)} disabled={tablePage <= 1}>Previous</Button>
-                    <span>Page {tablePage} of {pageCount}</span>
-                    <Button size="small" appearance="subtle" icon={<ArrowRightRegular />} iconPosition="after" onClick={() => setTablePage((page) => page + 1)} disabled={tablePage >= pageCount}>Next</Button>
-                  </div>
-                )}
+                <TablePagination page={tablePage} pageSize={tablePageSize} total={filteredDatasets.length} onPageChange={setTablePage} />
                 <div className="table-caption">Showing {pageStart}-{pageEnd} of {filteredDatasets.length} matching datasets ({results.total} total) | Source: Open Data Philippines.</div>
               </Card>
             );

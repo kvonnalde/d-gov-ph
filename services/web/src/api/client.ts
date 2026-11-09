@@ -106,7 +106,10 @@ export const liveClient: ApiClient = {
   },
 
   async listBudgetRecords(query = {}) {
-    const parameters = new URLSearchParams({ page: '1', pageSize: '20' });
+    const parameters = new URLSearchParams({
+      page: String(query.page ?? 1),
+      pageSize: String(query.pageSize ?? 25),
+    });
     if (query.search?.trim()) parameters.set('q', query.search.trim());
     if (query.fiscalYear) parameters.set('fiscalYear', query.fiscalYear);
     if (query.agency) parameters.set('agency', query.agency);

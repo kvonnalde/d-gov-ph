@@ -43,6 +43,8 @@ export interface BudgetRecordQuery {
   search?: string;
   fiscalYear?: string;
   agency?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface BudgetRecordsResponse {

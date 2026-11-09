@@ -12,19 +12,27 @@ import {
   Title2,
 } from '@fluentui/react-components';
 import { ArrowClockwiseRegular, DocumentSearchRegular } from '@fluentui/react-icons';
-import { api } from '../api';
-import { useApiResource } from '../api/useApiResource';
-import { DataStateView } from '../components/DataStateView';
-import { BudgetRecordDialog } from '../components/BudgetRecordDialog';
+import { api } from '../../../api';
+import type { BudgetRecordDetail, BudgetRecordsResponse } from '../../../api/types';
+import { DataStateView } from '../../../components/DataStateView';
+import { useApiResource } from '../../../api/useApiResource';
 import { GovernmentDatasetsPreview } from '../components/GovernmentDatasetsPreview';
-import type { BudgetRecordDetail, BudgetRecordsResponse } from '../api/types';
+import { BudgetRecordDialog } from '../components/BudgetRecordDialog';
+import { TablePagination } from '../components/TablePagination';
+import { TableText } from '../components/TableText';
 
 const isRecordListEmpty = (value: BudgetRecordsResponse) => value.items.length === 0;
+const verifiedRecordsPageSize = 25;
 
-export function BudgetPage() {
+export function GovernmentDatasetsPage() {
   const [selectedRecord, setSelectedRecord] = useState<BudgetRecordDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
-  const { state, retry } = useApiResource('verified-budget-records', () => api.listBudgetRecords(), isRecordListEmpty);
+  const [recordPage, setRecordPage] = useState(1);
+  const { state, retry } = useApiResource(
+    `verified-budget-records-${recordPage}`,
+    () => api.listBudgetRecords({ page: recordPage, pageSize: verifiedRecordsPageSize }),
+    isRecordListEmpty,
+  );
 
   async function openRecord(id: string) {
     setDetailError(null);
@@ -43,8 +51,8 @@ export function BudgetPage() {
         <div className="page-title-row">
           <div className="page-title-icon"><DocumentSearchRegular /></div>
           <div>
-            <Title2 id="page-title">Budget Explorer</Title2>
-            <Body1 className="page-subtitle">Search public datasets and review verified budget records.</Body1>
+            <Title2 id="page-title">Government Datasets</Title2>
+            <Body1 className="page-subtitle">Browse public datasets and review verified budget records.</Body1>
           </div>
         </div>
       </section>
@@ -82,10 +90,10 @@ export function BudgetPage() {
                   <TableBody>
                     {records.items.map((record) => (
                       <TableRow key={record.id}>
-                        <TableCell><span className="source-name">{record.title}</span></TableCell>
-                        <TableCell>{record.publisher}</TableCell>
-                        <TableCell>{record.fiscalPeriod}</TableCell>
-                        <TableCell><span className="status-badge status-verified">{record.displayState}</span></TableCell>
+                        <TableCell><TableText value={record.title} className="source-name" /></TableCell>
+                        <TableCell><TableText value={record.publisher} /></TableCell>
+                        <TableCell><TableText value={record.fiscalPeriod} /></TableCell>
+                        <TableCell><TableText value={record.displayState} className="status-badge status-verified" /></TableCell>
                         <TableCell>
                           <Button
                             appearance="subtle"
@@ -100,7 +108,8 @@ export function BudgetPage() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="table-caption">{records.total} verified records | Amounts are not shown until source mapping is verified.</div>
+              <TablePagination page={recordPage} pageSize={verifiedRecordsPageSize} total={records.total} onPageChange={setRecordPage} />
+              <div className="table-caption">Showing {records.items.length === 0 ? 0 : (recordPage - 1) * verifiedRecordsPageSize + 1}-{Math.min(recordPage * verifiedRecordsPageSize, records.total)} of {records.total} verified records | Amounts are not shown until source mapping is verified.</div>
             </Card>
           )}
         </DataStateView>

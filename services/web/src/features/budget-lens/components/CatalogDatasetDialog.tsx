@@ -11,8 +11,8 @@ import {
   Divider,
 } from '@fluentui/react-components';
 import { DismissRegular } from '@fluentui/react-icons';
-import { api } from '../api';
-import type { DataGovPhCatalogDataset } from '../api/types';
+import { api } from '../../../api';
+import type { DataGovPhCatalogDataset } from '../../../api/types';
 
 interface CatalogDatasetDialogProps {
   dataset: DataGovPhCatalogDataset | null;
